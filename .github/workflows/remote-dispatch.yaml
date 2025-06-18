@@ -41,6 +41,12 @@ jobs:
             fi
           done
 
+      - name: Debug outputs
+        run: |
+          echo "Alias: ${{ steps.extract_alias.outputs.alias }}"
+          echo "Email: ${{ steps.extract_email_and_username.outputs.email }}"
+          echo "Username: ${{ steps.extract_email_and_username.outputs.username }}"
+
       - name: Call workflow in auto-onboard
         uses: actions/github-script@v7
         with:
