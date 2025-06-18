@@ -11,6 +11,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install yq
+        run: |
+          curl -L https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /usr/local/bin/yq
+          chmod +x /usr/local/bin/yq
+
       - name: Extract email from PR title
         id: extract_email_and_username
         run: |
@@ -21,17 +26,25 @@ jobs:
           echo "email=$EMAIL" >> $GITHUB_OUTPUT
           echo "username=$USERNAME" >> $GITHUB_OUTPUT
 
-      - name: Get changed files in last commit
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v44
+
+      - name: Process user config file
         run: |
-          git fetch origin
-          git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }} > changed_files.txt
-          cat changed_files.txt
+          for file in ${{ steps.changes.outputs.added_files }}; do
+            if [[ "$file" == configs/users/*.yaml ]]; then
+              echo "Processing $file"
+              alias=$(yq eval '.username' "$file")
+              echo "alias=$ALIAS" >> $GITHUB_OUTPUT
+            fi
+          done
 
       - name: Parse first user file
         if: success()
         id: extract_alias
         run: |
-          FILE=$(head -n 1 user_files.txt)
+          FILE=$(head -n 1 changed_files.txt)
           echo "Parsing $FILE"
           ALIAS=$(yq eval '.username:[0]' "$FILE")
           echo "alias=$ALIAS" >> $GITHUB_OUTPUT
