@@ -3,6 +3,9 @@ name: Trigger auto-onbord workflow
 on:
   pull_request:
     types: [opened]
+  push:
+    branches:
+      - 'onboarding-*'
 
 jobs:
   notify:
