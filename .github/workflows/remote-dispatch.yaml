@@ -23,9 +23,9 @@ jobs:
 
       - name: Get changed files in last commit
         run: |
-          git diff --name-only HEAD^ HEAD > changed_files.txt
-          grep '^configs/users/.*\.ya\?ml$' changed_files.txt > user_files.txt || true
-          cat user_files.txt
+          git fetch origin ${{ github.event.pull_request.base.ref }}
+          git diff --name-only origin/${{ github.event.pull_request.base.ref }}...HEAD > changed_files.txt
+          cat changed_files.txt
 
       - name: Parse first user file
         if: success()
