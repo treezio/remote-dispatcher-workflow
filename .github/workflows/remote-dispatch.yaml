@@ -40,15 +40,6 @@ jobs:
             fi
           done
 
-      - name: Parse first user file
-        if: success()
-        id: extract_alias
-        run: |
-          FILE=$(head -n 1 changed_files.txt)
-          echo "Parsing $FILE"
-          ALIAS=$(yq eval '.username:[0]' "$FILE")
-          echo "alias=$ALIAS" >> $GITHUB_OUTPUT
-
       - name: Call workflow in auto-onboard
         uses: actions/github-script@v7
         with:
