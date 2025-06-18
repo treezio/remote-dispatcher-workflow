@@ -36,7 +36,7 @@ jobs:
           for file in ${{ steps.changed_files.outputs.added_files }}; do
             if [[ "$file" == configs/users/*.yaml ]]; then
               echo "Processing $file"
-              alias=$(yq eval '.username' "$file")
+              ALIAS=$(yq eval '.username' "$file")
               echo "alias=$ALIAS" >> $GITHUB_OUTPUT
             fi
           done
