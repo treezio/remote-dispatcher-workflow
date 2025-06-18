@@ -50,6 +50,7 @@ jobs:
       - name: Call workflow in auto-onboard
         uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.GH_PAT }}
           script: |
             const res = await github.rest.actions.createWorkflowDispatch({
               owner: 'treezio',
@@ -64,5 +65,3 @@ jobs:
             });
 
             console.log(`Dispatched target workflow: ${res.status}`);
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
