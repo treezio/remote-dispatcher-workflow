@@ -1,14 +1,13 @@
 name: Trigger auto-onbord workflow
 
 on:
-  push:
-    branches:
-      - 'onboarding-*'
+  pull_request:
+    types: [opened]
 
 jobs:
   notify:
     runs-on: ubuntu-latest
-    #if: startsWith(github.head_ref, 'onboarding-')
+    if: startsWith(github.head_ref, 'onboarding-')
     steps:
       - uses: actions/checkout@v4
 
