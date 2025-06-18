@@ -1,0 +1,55 @@
+name: Trigger auto-onbord workflow
+
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    if: startsWith(github.head_ref, 'onboarding-')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract email from PR title
+        id: extract_email_and_username
+        run: |
+          TITLE="${{ github.event.pull_request.title }}"
+          EMAIL="${TITLE#Onboarding }"
+          USERNAME="${EMAIL%@*}"
+
+          echo "email=$EMAIL" >> $GITHUB_OUTPUT
+          echo "username=$USERNAME" >> $GITHUB_OUTPUT
+
+      - name: Get changed files in last commit
+        run: |
+          git diff --name-only HEAD^ HEAD > changed_files.txt
+          grep '^configs/users/.*\.ya\?ml$' changed_files.txt > user_files.txt || true
+          cat user_files.txt
+
+      - name: Parse first user file
+        if: success()
+        id: extract_alias
+        run: |
+          FILE=$(head -n 1 user_files.txt)
+          echo "Parsing $FILE"
+          ALIAS=$(yq eval '.username:[0]' "$FILE")
+          echo "alias=$ALIAS" >> $GITHUB_OUTPUT
+
+      - name: Call workflow in auto-onboard
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: 'treezio',
+              repo: 'auto-onboard',
+              workflow_id: 'auto-onboard.yaml',
+              ref: 'main',
+              inputs: {
+                alias: ${{ steps.extract_alias.outputs.alias }}
+                email: ${{ steps.extract_email_and_username.outputs.email }}
+                username: ${{ steps.extract_email_and_username.outputs.username }}
+              }
+            });
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
