@@ -31,6 +31,7 @@ jobs:
         uses: tj-actions/changed-files@v44
 
       - name: Process user config file
+        id: extract_alias
         run: |
           for file in ${{ steps.changed_files.outputs.added_files }}; do
             if [[ "$file" == configs/users/*.yaml ]]; then
@@ -50,8 +51,8 @@ jobs:
               workflow_id: 'auto-onboard.yaml',
               ref: 'main',
               inputs: {
-                alias: ${{ steps.extract_alias.outputs.alias }}
-                email: ${{ steps.extract_email_and_username.outputs.email }}
+                alias: ${{ steps.extract_alias.outputs.alias }},
+                email: ${{ steps.extract_email_and_username.outputs.email }},
                 username: ${{ steps.extract_email_and_username.outputs.username }}
               }
             });
